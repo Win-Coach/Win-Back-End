@@ -1,0 +1,28 @@
+{
+  "name": "win-back-end",
+  "version": "1.0.0",
+  "description": "윈코치 백엔드 기능",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Win-Coach/Win-Back-End.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Win-Coach/Win-Back-End/issues"
+  },
+  "homepage": "https://github.com/Win-Coach/Win-Back-End#readme",
+  "dependencies": {
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "mysql2": "^3.14.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}
