@@ -18,7 +18,7 @@ CREATE TABLE users (
     mbti VARCHAR(4),                       -- 선택 입력 (NULL 허용)
   users
     -- 운동/목표 관련
-    athlete_type ENUM('엘리users트', '아마추어') NOT NULL,
+    athlete_type ENUM('엘리트', '아마추어') NOT NULL,
     sport VARCHAR(100) NOT NULL,           -- 종목명
     weekly_exercise_count INT NOT NULL,    -- 주 운동 횟수
     concern TEXT,                          -- 평소 문제점 (선택)
