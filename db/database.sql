@@ -16,7 +16,7 @@ CREATE TABLE users (
     height_cm FLOAT NOT NULL,              -- cm 기준
     weight_kg FLOAT NOT NULL,              -- kg 기준
     mbti VARCHAR(4),                       -- 선택 입력 (NULL 허용)
-  users
+    
     -- 운동/목표 관련
     athlete_type ENUM('엘리트', '아마추어') NOT NULL,
     sport VARCHAR(100) NOT NULL,           -- 종목명
