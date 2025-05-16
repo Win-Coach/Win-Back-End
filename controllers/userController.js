@@ -1,7 +1,10 @@
 const db = require('../db');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
-// 회원가입 API 로직
+const SECRET_KEY = process.env.JWT_SECRET;
+
+// 회원가입
 exports.registerUser = async (req, res) => {
   const {
     user_id, password, name, nickname, gender, age,
@@ -11,23 +14,23 @@ exports.registerUser = async (req, res) => {
   } = req.body;
 
   try {
-    // Hash the password before storing
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const [result] = await db.query(
       `INSERT INTO users (
-          user_id, password, name, nickname, gender, age,
-          height_cm, weight_kg, mbti,
-          athlete_type, sport, weekly_exercise_count,
-          concern, goal
+        user_id, password, name, nickname, gender, age,
+        height_cm, weight_kg, mbti,
+        athlete_type, sport, weekly_exercise_count,
+        concern, goal
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-          user_id, hashedPassword, name, nickname, gender, age,
-          height_cm, weight_kg, mbti,
-          athlete_type, sport, weekly_exercise_count,
-          concern, goal
+        user_id, hashedPassword, name, nickname, gender, age,
+        height_cm, weight_kg, mbti,
+        athlete_type, sport, weekly_exercise_count,
+        concern, goal
       ]
     );
+
     res.status(201).json({ id: result.insertId, message: '회원가입 완료!' });
   } catch (err) {
     console.error(err);
@@ -35,7 +38,7 @@ exports.registerUser = async (req, res) => {
   }
 };
 
-// 유저 조회 API 로직
+// 유저 전체 조회
 exports.getUsers = async (req, res) => {
   try {
     const [rows] = await db.query('SELECT * FROM users');
@@ -46,41 +49,41 @@ exports.getUsers = async (req, res) => {
   }
 };
 
-
+// 로그인 (JWT 발급)
 exports.loginUser = async (req, res) => {
-    const { user_id, password } = req.body;
-  
-    try {
-      // 1. 해당 ID가 존재하는지 확인
-      const [rows] = await db.query('SELECT * FROM users WHERE user_id = ?', [user_id]);
-  
-      if (rows.length === 0) {
-        return res.status(400).json({ error: '존재하지 않는 아이디입니다.' });
-      }
-  
-      const user = rows[0];
-  
-      // 2. 비밀번호 비교
-      const passwordMatch = await bcrypt.compare(password, user.password);
-  
-      if (!passwordMatch) {
-        return res.status(401).json({ error: '비밀번호가 일치하지 않습니다.' });
-      }
-  
-      // 3. 로그인 성공 응답 (추후 JWT 발급 가능)
-      res.status(200).json({
-        message: '로그인 성공!',
-        user: {
-          id: user.id,
-          user_id: user.user_id,
-          nickname: user.nickname,
-          athlete_type: user.athlete_type,
-          sport: user.sport
-        }
-      });
-  
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: '로그인 중 오류 발생' });
+  const { user_id, password } = req.body;
+
+  try {
+    const [rows] = await db.query('SELECT * FROM users WHERE user_id = ?', [user_id]);
+    const user = rows[0];
+
+    if (!user) {
+      return res.status(400).json({ error: '존재하지 않는 아이디입니다.' });
     }
-  };
+
+    // 사용자가 입력한 비밀번호(평문)와 DB에 저장된 해시된 비밀번호 비교
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (!passwordMatch) {
+      return res.status(401).json({ error: '비밀번호가 일치하지 않습니다.' });
+    }
+
+    // ✅ JWT 발급
+    const token = jwt.sign({ id: user.id }, SECRET_KEY, { expiresIn: '1h' });
+
+    res.status(200).json({
+      message: '로그인 성공!',
+      token,
+      user: {
+        id: user.id,
+        user_id: user.user_id,
+        nickname: user.nickname,
+        athlete_type: user.athlete_type,
+        sport: user.sport
+      }
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: '로그인 중 오류 발생' });
+  }
+};
