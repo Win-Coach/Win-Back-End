@@ -38,6 +38,10 @@ exports.registerUser = async (req, res) => {
   }
 };
 
+
+
+
+
 // 유저 전체 조회
 exports.getUsers = async (req, res) => {
   try {
@@ -48,6 +52,30 @@ exports.getUsers = async (req, res) => {
     res.status(500).json({ error: '조회 실패' });
   }
 };
+
+
+// 인증된 사용자 정보 조회
+exports.getMyInfo = async (req, res) => {
+  const userId = req.user.id; // auth 미들웨어에서 디코딩된 유저 ID
+
+  try {
+    const [rows] = await db.query('SELECT * FROM users WHERE id = ?', [userId]);
+    if (rows.length === 0) {
+      return res.status(404).json({ error: '사용자 정보를 찾을 수 없습니다.' });
+    }
+    const user = rows[0];
+    delete user.password; // 비밀번호는 반환하지 않음
+    res.json(user);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: '서버 오류' });
+  }
+};
+
+
+
+
+
 
 // 로그인 (JWT 발급)
 exports.loginUser = async (req, res) => {
