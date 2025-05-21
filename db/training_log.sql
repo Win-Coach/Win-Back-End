@@ -18,9 +18,9 @@ CREATE TABLE training_logs (
   emotion JSON,
 
   -- 통증 강도: 가슴, 어깨, 허벅지 각각 1 ~ 8
-  pain_chest TINYINT CHECK (pain_chest BETWEEN 1 AND 8),
-  pain_shoulder TINYINT CHECK (pain_shoulder BETWEEN 1 AND 8),
-  pain_thigh TINYINT CHECK (pain_thigh BETWEEN 1 AND 8),
+  pain_chest TINYINT CHECK (pain_chest BETWEEN 0 AND 8),
+  pain_shoulder TINYINT CHECK (pain_shoulder BETWEEN 0 AND 8),
+  pain_thigh TINYINT CHECK (pain_thigh BETWEEN 0 AND 8),
 
   -- 자유입력 텍스트
   training_content TEXT,
