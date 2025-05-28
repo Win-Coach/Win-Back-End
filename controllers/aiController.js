@@ -4,7 +4,7 @@ exports.analyzeTrainingLog = async (req, res) => {
   const { training_content, feedback, next_goal } = req.body;
 
   try {
-    const response = await axios.post('http://127.0.0.1:8000/analyze', {
+    const response = await axios.post('http://144.24.93.117:8000/analyze', {
       training_content,
       feedback,
       next_goal
