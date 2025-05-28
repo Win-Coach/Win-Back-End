@@ -10,6 +10,10 @@ app.use(express.json());
 app.use('/users', userRoutes);
 app.use('/traininglogs', trainingLogRoutes); // ✅ 등록
 
+const aiRoutes = require('./routes/ai');
+app.use('/api', aiRoutes);  // → POST /api/analyze
+
+
 const PORT = 3000;
 
 db.query('SELECT 1')
