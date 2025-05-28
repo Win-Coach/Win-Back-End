@@ -1,1 +1,9 @@
+# Node.js
+node_modules/
 .env
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Optional: 환경마다 다를 수 있는 lock file도 제외
+package-lock.json
