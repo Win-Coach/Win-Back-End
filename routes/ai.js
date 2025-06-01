@@ -2,12 +2,10 @@
 const express = require('express');
 const router = express.Router();
 const aiController = require('../controllers/aiController');
-const { authenticateToken } = require('../middleware/auth');
+const auth = require('../middleware/auth');
 
-router.post('/analyze', authenticateToken, aiController.analyzeTrainingLog);
+router.post('/analyze', auth.authenticateToken, aiController.analyzeTrainingLog);
 
-router.get('/user/:userId', aiController.getResultsByUser);
-
-router.get('/user/:userId/:date', aiController.getResultByUserAndDate);
+router.get('/user', auth.authenticateToken, aiController.getResultsByUser);
 
 module.exports = router;

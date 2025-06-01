@@ -38,7 +38,7 @@ exports.analyzeTrainingLog = async (req, res) => {
 };
 
 exports.getResultsByUser = async (req, res) => {
-  const { userId } = req.params;
+  const userId = req.user.id;  // ✅ 수정됨
   try {
     const [rows] = await db.execute(
       'SELECT * FROM analysis_results WHERE user_id = ? ORDER BY date DESC',
