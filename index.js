@@ -13,6 +13,9 @@ app.use('/traininglogs', trainingLogRoutes); // ✅ 등록
 const aiRoutes = require('./routes/ai');
 app.use('/api', aiRoutes);  // → POST /api/analyze
 
+const routineRoutes = require('./routes/routines');
+app.use('/routines', routineRoutes); // → POST /routines/add
+
 
 const PORT = 3000;
 
