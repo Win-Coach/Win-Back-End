@@ -11,7 +11,7 @@ CREATE TABLE training_logs (
   -- 훈련 몰입도: 1 ~ 5
   immersion TINYINT CHECK (immersion BETWEEN 1 AND 5),
 
-  -- 훈련 성과: 1 ~ 5
+  -- 훈련 성과: 1 ~ 5ㅇ
   achievement TINYINT CHECK (achievement BETWEEN 1 AND 5),
 
   -- 감정 목록 (여러 개 선택 가능하므로 JSON 형태)
