@@ -6,6 +6,7 @@ const db = require('./db');
 const userRoutes = require('./routes/users');
 const trainingLogRoutes = require('./routes/trainingLogs'); // ✅ 훈련일지 라우터
 
+
 app.use(express.json());
 app.use('/users', userRoutes);
 app.use('/traininglogs', trainingLogRoutes); // ✅ 등록

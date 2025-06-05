@@ -6,7 +6,7 @@ exports.createTrainingLog = async (req, res) => {
       intensity,
       immersion,
       achievement,
-      emotion, // array
+      emotion, // <-- 여기 key 확인!
       pain_chest,
       pain_shoulder,
       pain_thigh,
@@ -17,12 +17,13 @@ exports.createTrainingLog = async (req, res) => {
       weather
     } = req.body;
 
-    const user_id = req.user.id; // JWT에서 추출된 유저 ID
+    const user_id = req.user.id;
 
-    // 필수값 체크
     if (!intensity || !immersion || !achievement || !weather) {
       return res.status(400).json({ error: '필수 항목이 누락되었습니다.' });
     }
+
+    const emotionString = Array.isArray(emotion) ? JSON.stringify(emotion) : null;
 
     const [result] = await db.query(
       `INSERT INTO training_logs (
@@ -35,7 +36,7 @@ exports.createTrainingLog = async (req, res) => {
         intensity,
         immersion,
         achievement,
-        JSON.stringify(emotion),
+        emotionString,
         pain_chest,
         pain_shoulder,
         pain_thigh,
