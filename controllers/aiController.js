@@ -67,3 +67,28 @@ exports.getResultByUserAndDate = async (req, res) => {
     res.status(500).json({ error: '서버 오류' });
   }
 };
+
+exports.getAnalysisByCreatedDate = async (req, res) => {
+  const userId = req.user.id;
+  const { date } = req.query; // 예: 2025-06-01
+
+  const isValidDate = /^\d{4}-\d{2}-\d{2}$/.test(date);
+  if (!isValidDate) {
+    return res.status(400).json({ success: false, message: '날짜 형식 오류 (예: YYYY-MM-DD)' });
+  }
+
+  try {
+    const [rows] = await db.execute(
+      `SELECT * FROM analysis_results
+       WHERE user_id = ?
+       AND DATE(created_at) = ?
+       ORDER BY created_at DESC`,
+      [userId, date]
+    );
+
+    res.status(200).json({ success: true, data: rows });
+  } catch (err) {
+    console.error('❌ 분석 결과 조회 실패:', err);
+    res.status(500).json({ success: false, message: '서버 오류' });
+  }
+};
