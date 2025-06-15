@@ -10,7 +10,7 @@ exports.analyzeTrainingLog = async (req, res) => {
 
     const date = dayjs().format('YYYY-MM-DD');
 
-    const response = await axios.post('http://144.24.93.117:8000/analyze', {
+    const response = await axios.post('http://144.24.93.117:8000/api/analyze', {
       training_content,
       feedback,
       next_goal
