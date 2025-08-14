@@ -6,7 +6,6 @@ const db = require('./db');
 const userRoutes = require('./routes/users');
 const trainingLogRoutes = require('./routes/trainingLogs'); // ✅ 훈련일지 라우터
 
-
 app.use(express.json());
 app.use('/users', userRoutes);
 app.use('/traininglogs', trainingLogRoutes); // ✅ 등록
@@ -16,7 +15,6 @@ app.use('/api', aiRoutes);  // → POST /api/analyze
 
 const routineRoutes = require('./routes/routines');
 app.use('/routines', routineRoutes); // → POST /routines/add
-
 
 const PORT = 3000;
 

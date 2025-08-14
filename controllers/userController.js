@@ -115,3 +115,64 @@ exports.loginUser = async (req, res) => {
     res.status(500).json({ error: '로그인 중 오류 발생' });
   }
 };
+
+
+exports.updateMyInfo = async (req, res) => {
+    // 1. 인증된 사용자의 ID를 가져옵니다. (authenticateToken 미들웨어에서 설정)
+    const userId = req.user.id;
+
+    // 2. 요청 바디에서 업데이트할 필드들을 가져옵니다.
+    const {
+        nickname,
+        height_cm,
+        weight_kg,
+        mbti,
+        weekly_exercise_count,
+        concern,
+        goal
+    } = req.body;
+
+    // 3. 업데이트할 필드와 값을 저장할 객체를 생성합니다.
+    const fieldsToUpdate = {};
+    if (nickname !== undefined) fieldsToUpdate.nickname = nickname;
+    if (height_cm !== undefined) fieldsToUpdate.height_cm = height_cm;
+    if (weight_kg !== undefined) fieldsToUpdate.weight_kg = weight_kg;
+    if (mbti !== undefined) fieldsToUpdate.mbti = mbti;
+    if (weekly_exercise_count !== undefined) fieldsToUpdate.weekly_exercise_count = weekly_exercise_count;
+    if (concern !== undefined) fieldsToUpdate.concern = concern;
+    if (goal !== undefined) fieldsToUpdate.goal = goal;
+
+    // 4. 업데이트할 필드가 하나도 없으면 에러를 반환합니다.
+    if (Object.keys(fieldsToUpdate).length === 0) {
+        return res.status(400).json({ message: '업데이트할 데이터가 없습니다.' });
+    }
+
+    // 5. 동적 SQL 쿼리를 생성합니다.
+    const setClauses = Object.keys(fieldsToUpdate).map(field => `${field} = ?`).join(', ');
+    const queryParams = Object.values(fieldsToUpdate);
+    queryParams.push(userId); // WHERE 절에 사용할 ID 추가
+
+    const query = `UPDATE users SET ${setClauses} WHERE id = ?`;
+
+    try {
+        // 6. 데이터베이스에 쿼리를 실행합니다.
+        const [result] = await db.query(query, queryParams);
+
+        // 7. 업데이트된 행이 없으면 사용자를 찾지 못한 것입니다.
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' });
+        }
+
+        // 8. 성공적으로 업데이트되면 성공 메시지를 반환합니다.
+        res.status(200).json({ message: '사용자 정보가 성공적으로 업데이트되었습니다.' });
+
+    } catch (error) {
+        console.error('사용자 정보 업데이트 중 오류 발생:', error);
+        // 닉네임 중복과 같은 UNIQUE 제약 조건 위반 처리
+        if (error.code === 'ER_DUP_ENTRY') {
+            return res.status(409).json({ message: '이미 사용 중인 닉네임입니다.' });
+        }
+        res.status(500).json({ message: '서버 오류가 발생했습니다.' });
+    }
+};
+
