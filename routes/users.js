@@ -6,7 +6,8 @@ const {
   registerUser,
   getUsers,
   loginUser,
-  getMyInfo
+  getMyInfo,
+  updateMyInfo
 } = require('../controllers/userController'); 
 
 router.post('/signup', registerUser);
