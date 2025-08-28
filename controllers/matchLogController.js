@@ -240,7 +240,7 @@ exports.analyzeMatchLog = async (req, res) => {
  * ✨ [신규] 특정 경기일지의 분석 결과 조회 (GET)
  */
 exports.getMatchAnalysis = async (req, res) => {
-    const { log_id } = req.params; // match_log_id를 log_id로 받음
+    const { log_id } = req.params;
     const user_id = req.user.id;
 
     try {
@@ -253,12 +253,21 @@ exports.getMatchAnalysis = async (req, res) => {
             return res.status(404).json({ success: false, message: '해당 경기일지에 대한 분석 결과를 찾을 수 없습니다.' });
         }
 
-        const analysis = {
-            ...rows[0],
-            analysis_result: JSON.parse(rows[0].analysis_result)
-        };
+        const analysisData = rows[0];
 
-        res.status(200).json({ success: true, data: analysis });
+        // 👇 이 부분을 수정했습니다.
+        // analysis_result가 문자열일 경우에만 JSON.parse()를 실행합니다.
+        if (typeof analysisData.analysis_result === 'string') {
+            try {
+                analysisData.analysis_result = JSON.parse(analysisData.analysis_result);
+            } catch (e) {
+                console.error('JSON 파싱 오류:', e);
+                // 파싱 실패 시 원본 데이터 또는 null 처리
+                analysisData.analysis_result = null; 
+            }
+        }
+
+        res.status(200).json({ success: true, data: analysisData });
     } catch (err) {
         console.error('❌ 경기일지 분석 조회 오류:', err);
         res.status(500).json({ success: false, message: '서버 오류' });
