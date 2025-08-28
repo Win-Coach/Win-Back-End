@@ -11,16 +11,27 @@ CREATE TABLE training_logs (
   -- 훈련 몰입도: 1 ~ 5
   immersion TINYINT CHECK (immersion BETWEEN 1 AND 5),
 
-  -- 훈련 성과: 1 ~ 5ㅇ
+  -- 훈련 성과: 1 ~ 5
   achievement TINYINT CHECK (achievement BETWEEN 1 AND 5),
 
   -- 감정 목록 (여러 개 선택 가능하므로 JSON 형태)
   emotion JSON,
 
   -- 통증 강도: 가슴, 어깨, 허벅지 각각 1 ~ 8
-  pain_chest TINYINT CHECK (pain_chest BETWEEN 0 AND 8),
+  pain_head TINYINT CHECK (pain_head BETWEEN 0 AND 8),
+  pain_neck TINYINT CHECK (pain_neck BETWEEN 0 AND 8),
   pain_shoulder TINYINT CHECK (pain_shoulder BETWEEN 0 AND 8),
+  pain_chest TINYINT CHECK (pain_chest BETWEEN 0 AND 8),
+  pain_abdomen TINYINT CHECK (pain_abdomen BETWEEN 0 AND 8),
+  pain_waist TINYINT CHECK (pain_waist BETWEEN 0 AND 8),
+  pain_arm TINYINT CHECK (pain_arm BETWEEN 0 AND 8),
+  pain_wrist TINYINT CHECK (pain_wrist BETWEEN 0 AND 8),
+  pain_pelvis TINYINT CHECK (pain_pelvis BETWEEN 0 AND 8),
   pain_thigh TINYINT CHECK (pain_thigh BETWEEN 0 AND 8),
+  pain_knee TINYINT CHECK (pain_knee BETWEEN 0 AND 8),
+  pain_calf TINYINT CHECK (pain_calf BETWEEN 0 AND 8),
+  pain_ankle TINYINT CHECK (pain_ankle BETWEEN 0 AND 8),
+  pain_foot TINYINT CHECK (pain_foot BETWEEN 0 AND 8)
 
   -- 자유입력 텍스트
   training_content TEXT,

@@ -7,7 +7,8 @@ const {
   getUsers,
   loginUser,
   getMyInfo,
-  updateMyInfo
+  updateMyInfo,
+  updateMyPassword
 } = require('../controllers/userController'); 
 
 router.post('/signup', registerUser);
@@ -15,7 +16,6 @@ router.get('/', getUsers);
 router.post('/login', loginUser);
 router.get('/me', auth, getMyInfo);
 router.put('/me', auth, updateMyInfo);
-
-
+router.put('/me/password', auth, updateMyPassword);
 
 module.exports = router;

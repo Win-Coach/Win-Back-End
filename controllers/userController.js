@@ -176,3 +176,44 @@ exports.updateMyInfo = async (req, res) => {
     }
 };
 
+
+// 비밀번호 변경에 대한 API
+
+exports.updateMyPassword = async (req, res) => {
+    // 1. 인증된 사용자의 ID와 요청 바디에서 현재/새 비밀번호를 가져옵니다.
+    const userId = req.user.id;
+    const { currentPassword, newPassword } = req.body;
+
+    // 2. 요청 값 유효성 검사
+    if (!currentPassword || !newPassword) {
+        return res.status(400).json({ message: '현재 비밀번호와 새 비밀번호를 모두 입력해주세요.' });
+    }
+
+    try {
+        // 3. DB에서 현재 사용자의 정보를 가져옵니다. (암호화된 비밀번호 포함)
+        const [rows] = await db.query('SELECT password FROM users WHERE id = ?', [userId]);
+        if (rows.length === 0) {
+            return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' });
+        }
+        const user = rows[0];
+
+        // 4. 입력된 '현재 비밀번호'와 DB의 암호화된 비밀번호를 비교합니다.
+        const isMatch = await bcrypt.compare(currentPassword, user.password);
+        if (!isMatch) {
+            return res.status(401).json({ message: '현재 비밀번호가 일치하지 않습니다.' });
+        }
+
+        // 5. '새 비밀번호'를 암호화(해싱)합니다.
+        const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+        // 6. DB에 암호화된 새 비밀번호를 업데이트합니다.
+        await db.query('UPDATE users SET password = ? WHERE id = ?', [hashedNewPassword, userId]);
+
+        // 7. 성공 메시지를 반환합니다.
+        res.status(200).json({ message: '비밀번호가 성공적으로 변경되었습니다.' });
+
+    } catch (error) {
+        console.error('비밀번호 변경 중 오류 발생:', error);
+        res.status(500).json({ message: '서버 오류가 발생했습니다.' });
+    }
+};

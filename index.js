@@ -13,8 +13,15 @@ app.use('/traininglogs', trainingLogRoutes); // ✅ 등록
 const aiRoutes = require('./routes/ai');
 app.use('/api', aiRoutes);  // → POST /api/analyze
 
+const matchLogRoutes = require('./routes/matchLogRoutes'); // 파일 경로
+app.use('/match-logs', matchLogRoutes);
+
 const routineRoutes = require('./routes/routines');
 app.use('/routines', routineRoutes); // → POST /routines/add
+
+const injuryLogRoutes = require('./routes/injuryLogRoutes');
+app.use('/injury-logs', injuryLogRoutes);
+
 
 const PORT = 3000;
 
