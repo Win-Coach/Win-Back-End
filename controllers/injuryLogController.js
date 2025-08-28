@@ -71,7 +71,9 @@ exports.getInjuryLogs = async (req, res) => {
         logs.forEach(log => {
             // emotion 필드 파싱
             try {
-                if (log.emotion) log.emotion = JSON.parse(log.emotion);
+                if (log.emotion && typeof log.emotion === 'string') {
+                    log.emotion = JSON.parse(log.emotion);
+                }
             } catch (e) {
                 log.emotion = null;
             }
@@ -98,6 +100,48 @@ exports.getInjuryLogs = async (req, res) => {
         console.error('❌ 부상/재활일지 조회 오류:', err);
         res.status(500).json({ success: false, message: '서버 오류' });
     }
+};
+
+/**
+ * ✨ [신규] 날짜별 부상/재활일지 조회 (GET)
+ */
+exports.getInjuryLogsByDate = async (req, res) => {
+  const user_id = req.user.id;
+  const { date } = req.query; // ex) '2025-08-29'
+
+  const isValidDate = /^\d{4}-\d{2}-\d{2}$/.test(date);
+  if (!date || !isValidDate) {
+    return res.status(400).json({ error: '날짜가 필요합니다 (형식: YYYY-MM-DD).' });
+  }
+
+  try {
+    const [logs] = await db.query(
+      `SELECT * FROM injury_logs
+       WHERE user_id = ? AND DATE(log_date) = ?
+       ORDER BY created_at DESC`,
+      [user_id, date]
+    );
+
+    // emotion 필드를 JSON 객체로 파싱
+    const parsedLogs = logs.map(log => {
+      let parsedEmotion = null;
+      try {
+        if (log.emotion && typeof log.emotion === 'string') {
+          parsedEmotion = JSON.parse(log.emotion);
+        } else if (Array.isArray(log.emotion)) {
+          parsedEmotion = log.emotion;
+        }
+      } catch (e) {
+        console.warn('⚠️ emotion 파싱 오류:', log.emotion);
+      }
+      return { ...log, emotion: parsedEmotion };
+    });
+
+    res.status(200).json({ success: true, data: parsedLogs });
+  } catch (err) {
+    console.error('❌ 날짜별 부상/재활일지 조회 오류:', err);
+    res.status(500).json({ success: false, message: '서버 오류' });
+  }
 };
 
 

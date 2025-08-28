@@ -2,10 +2,11 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth').authenticateToken; // 인증 미들웨어
 
-// 1. injuryLogController에서 export한 모든 함수를 가져옵니다.
+// 1. injuryLogController에서 getInjuryLogsByDate 함수를 추가로 가져옵니다.
 const {
   createInjuryLog,
   getInjuryLogs,
+  getInjuryLogsByDate, // <-- 추가
   deleteInjuryLog,
   analyzeRehabLog,
   getRehabAnalysis
@@ -18,6 +19,9 @@ router.post('/', auth, createInjuryLog);
 
 // GET /injury-logs : 사용자의 모든 부상 및 관련 재활일지 조회
 router.get('/', auth, getInjuryLogs);
+
+// GET /injury-logs/by-date : 날짜별 부상/재활일지 조회
+router.get('/by-date', auth, getInjuryLogsByDate); // <-- 추가된 라우트
 
 // DELETE /injury-logs/:id : 특정 부상 또는 재활일지 삭제
 router.delete('/:id', auth, deleteInjuryLog);
