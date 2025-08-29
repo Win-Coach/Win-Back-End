@@ -1,6 +1,7 @@
 const db = require('../db');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const axios = require('axios');
 
 const SECRET_KEY = process.env.JWT_SECRET;
 
@@ -215,5 +216,79 @@ exports.updateMyPassword = async (req, res) => {
     } catch (error) {
         console.error('비밀번호 변경 중 오류 발생:', error);
         res.status(500).json({ message: '서버 오류가 발생했습니다.' });
+    }
+};
+
+// 카카오 로그인
+exports.kakaoLogin = async (req, res) => {
+    const { accessToken } = req.body;
+
+    if (!accessToken) {
+        return res.status(400).json({ error: '카카오 액세스 토큰이 필요합니다.' });
+    }
+
+    try {
+        // 카카오 사용자 정보 조회
+        const kakaoResponse = await axios.get('https://kapi.kakao.com/v2/user/me', {
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+            }
+        });
+
+        const kakaoUser = kakaoResponse.data;
+        const kakaoId = kakaoUser.id;
+        const nickname = kakaoUser.properties?.nickname || 'Unknown';
+        const email = kakaoUser.kakao_account?.email;
+
+        // DB에서 카카오 사용자 조회 (user_id 패턴으로 구분)
+        const kakaoUserId = `kakao_${kakaoId}`;
+        const [existingUsers] = await db.query(
+            'SELECT * FROM users WHERE user_id = ?',
+            [kakaoUserId]
+        );
+
+        let user;
+        
+        if (existingUsers.length > 0) {
+            // 기존 사용자 로그인
+            user = existingUsers[0];
+        } else {
+            // 새로운 사용자 생성 (카카오 회원가입)
+            const [insertResult] = await db.query(
+                `INSERT INTO users (
+                    user_id, password, name, nickname, gender, age,
+                    height_cm, weight_kg, athlete_type, sport, weekly_exercise_count, goal
+                ) VALUES (?, NULL, ?, ?, '남성', 20, 170, 70, '아마추어', 'general', 3, '건강 관리')`,
+                [kakaoUserId, nickname, nickname]
+            );
+
+            // 새로 생성된 사용자 정보 조회
+            const [newUser] = await db.query('SELECT * FROM users WHERE id = ?', [insertResult.insertId]);
+            user = newUser[0];
+        }
+
+        // JWT 토큰 발급
+        const token = jwt.sign({ id: user.id }, SECRET_KEY, { expiresIn: '1h' });
+
+        res.status(200).json({
+            message: '카카오 로그인 성공!',
+            token,
+            user: {
+                id: user.id,
+                user_id: user.user_id,
+                nickname: user.nickname,
+                athlete_type: user.athlete_type,
+                sport: user.sport,
+                isNewUser: existingUsers.length === 0 // 신규 사용자 여부
+            }
+        });
+
+    } catch (error) {
+        console.error('카카오 로그인 오류:', error.response?.data || error.message);
+        if (error.response?.status === 401) {
+            return res.status(401).json({ error: '유효하지 않은 카카오 액세스 토큰입니다.' });
+        }
+        res.status(500).json({ error: '카카오 로그인 중 오류가 발생했습니다.' });
     }
 };

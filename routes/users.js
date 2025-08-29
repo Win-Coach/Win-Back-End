@@ -8,12 +8,14 @@ const {
   loginUser,
   getMyInfo,
   updateMyInfo,
-  updateMyPassword
+  updateMyPassword,
+  kakaoLogin
 } = require('../controllers/userController'); 
 
 router.post('/signup', registerUser);
 router.get('/', getUsers);
 router.post('/login', loginUser);
+router.post('/kakao-login', kakaoLogin);
 router.get('/me', auth, getMyInfo);
 router.put('/me', auth, updateMyInfo);
 router.put('/me/password', auth, updateMyPassword);
