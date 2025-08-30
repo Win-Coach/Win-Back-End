@@ -221,13 +221,17 @@ exports.updateMyPassword = async (req, res) => {
 
 // 카카오 로그인
 exports.kakaoLogin = async (req, res) => {
+    console.log('🔥 카카오 로그인 시작');
     const { accessToken } = req.body;
+    console.log('🔥 받은 액세스 토큰:', accessToken ? '존재함' : '없음');
 
     if (!accessToken) {
+        console.log('❌ 액세스 토큰 없음');
         return res.status(400).json({ error: '카카오 액세스 토큰이 필요합니다.' });
     }
 
     try {
+        console.log('🔥 카카오 API 호출 시작');
         // 카카오 사용자 정보 조회
         const kakaoResponse = await axios.get('https://kapi.kakao.com/v2/user/me', {
             headers: {
@@ -236,24 +240,31 @@ exports.kakaoLogin = async (req, res) => {
             }
         });
 
+        console.log('✅ 카카오 API 응답 성공:', kakaoResponse.data);
         const kakaoUser = kakaoResponse.data;
         const kakaoId = kakaoUser.id;
         const nickname = kakaoUser.properties?.nickname || 'Unknown';
         const email = kakaoUser.kakao_account?.email;
+        console.log(`🔥 카카오 사용자 정보 - ID: ${kakaoId}, 닉네임: ${nickname}`);
 
         // DB에서 카카오 사용자 조회 (user_id 패턴으로 구분)
         const kakaoUserId = `kakao_${kakaoId}`;
+        console.log('🔥 DB 조회 시작, kakaoUserId:', kakaoUserId);
+        
         const [existingUsers] = await db.query(
             'SELECT * FROM users WHERE user_id = ?',
             [kakaoUserId]
         );
+        console.log('✅ DB 조회 완료, 기존 사용자 수:', existingUsers.length);
 
         let user;
         
         if (existingUsers.length > 0) {
+            console.log('🔥 기존 사용자 로그인');
             // 기존 사용자 로그인
             user = existingUsers[0];
         } else {
+            console.log('🔥 신규 사용자 생성 시작');
             // 새로운 사용자 생성 (카카오 회원가입)
             const [insertResult] = await db.query(
                 `INSERT INTO users (
@@ -262,15 +273,20 @@ exports.kakaoLogin = async (req, res) => {
                 ) VALUES (?, NULL, ?, ?, '남성', 20, 170, 70, '아마추어', 'general', 3, '건강 관리')`,
                 [kakaoUserId, nickname, nickname]
             );
+            console.log('✅ 신규 사용자 생성 완료, ID:', insertResult.insertId);
 
             // 새로 생성된 사용자 정보 조회
             const [newUser] = await db.query('SELECT * FROM users WHERE id = ?', [insertResult.insertId]);
             user = newUser[0];
+            console.log('✅ 신규 사용자 정보 조회 완료');
         }
 
+        console.log('🔥 JWT 토큰 생성 시작, SECRET_KEY:', SECRET_KEY ? '존재함' : '없음');
         // JWT 토큰 발급
         const token = jwt.sign({ id: user.id }, SECRET_KEY, { expiresIn: '1h' });
+        console.log('✅ JWT 토큰 생성 완료');
 
+        console.log('🔥 최종 응답 전송');
         res.status(200).json({
             message: '카카오 로그인 성공!',
             token,
@@ -285,7 +301,12 @@ exports.kakaoLogin = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('카카오 로그인 오류:', error.response?.data || error.message);
+        console.error('❌ 카카오 로그인 오류 상세:');
+        console.error('- 에러 메시지:', error.message);
+        console.error('- 스택 트레이스:', error.stack);
+        console.error('- Axios 응답:', error.response?.data);
+        console.error('- HTTP 상태:', error.response?.status);
+        
         if (error.response?.status === 401) {
             return res.status(401).json({ error: '유효하지 않은 카카오 액세스 토큰입니다.' });
         }
